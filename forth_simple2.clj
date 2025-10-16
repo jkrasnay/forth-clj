@@ -24,14 +24,15 @@
 
 (defn popn
   "Returns a vector with two items.
-  The first item is a vector of the top n items on the stack.
+  The first item is a list of the top n items on the stack with the previous
+  top-of-stack as the last element.
   The second item is the state with the top n items removed from the stack.
   "
   [state n]
   (reduce (fn [[items state] _]
             [(conj items (top state))
              (pop* state)])
-          [[] state]
+          ['() state]
           (range n)))
 
 
@@ -47,6 +48,8 @@
   "Returns a function that updates the state by popping `n` items
   from the stack, applying `f` to them, and pushing the result onto
   the stack.
+
+  Note the order of arguments: the previous top-of-stack is the _last_ argument.
   "
   [f n]
   (fn [state]
@@ -56,13 +59,12 @@
 
 (defn updater*
   "Like `updater`, but the result of `f` is a sequence of items to be pushed
-  onto the stack.  Items are pushed in reverse order, so the first item in
-  the sequence ends up at the top of the stack.
+  onto the stack.  The resulting top-of-stack is the last item in the sequence.
   "
   [f n]
   (fn [state]
     (let [[args state] (popn state n)]
-      (reduce push state (reverse (apply f args))))))
+      (reduce push state (apply f args)))))
 
 
 ;;-- Buffer Parsing ----------------------------------------------------------
